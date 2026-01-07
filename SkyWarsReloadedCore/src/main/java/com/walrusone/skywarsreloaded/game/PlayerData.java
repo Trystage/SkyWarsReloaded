@@ -228,7 +228,8 @@ public class PlayerData {
     public void connectToBungeeLobby(Player player) {
         player.teleport(locationBeforeRespawn);
         Bukkit.getConsoleSender().sendMessage("Now connecting player to lobby (1)");
-        SkyWarsReloaded.get().sendBungeeMsg(player, "Connect", SkyWarsReloaded.getCfg().getBungeeLobby());
+//        SkyWarsReloaded.get().sendBungeeMsg(player, "Connect", SkyWarsReloaded.getCfg().getBungeeLobby());
+        player.kickPlayer("");
     }
 
     public static void teleportToBukkitLobby(Player player) {
