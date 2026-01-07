@@ -67,10 +67,12 @@ public class PlayerJoinListener implements Listener {
 
         // Load player data
         pStats.loadStats(() -> {
-            // Not allowed? Stop.
-            if (!postLoadStats(player)) return;
-            // Send updater message if the player was allowed to join
-            SkyWarsReloaded.get().getUpdater().handleJoiningPlayer(player);
+            Bukkit.getScheduler().runTask(SkyWarsReloaded.get(), () -> {
+                // Not allowed? Stop.
+                if (!postLoadStats(player)) return;
+                // Send updater message if the player was allowed to join
+                SkyWarsReloaded.get().getUpdater().handleJoiningPlayer(player);
+            });
         });
     }
 

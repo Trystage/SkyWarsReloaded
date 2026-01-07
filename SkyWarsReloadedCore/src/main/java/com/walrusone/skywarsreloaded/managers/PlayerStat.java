@@ -224,6 +224,7 @@ public class PlayerStat {
                         .replace("{kills}", Integer.toString(ps.getKills()))
                         .replace("{deaths}", Integer.toString(ps.getDeaths()))
                         .replace("{xp}", Integer.toString(ps.getXp()))
+                        .replace("{reqxp}", Integer.toString(Util.get().getExpRequiredForNextLevel(Util.get().getPlayerLevel(player))))
                         .replace("{killdeath}", killdeath)
                         .replace("{winloss}", winloss)
                         .replace("{balance}", "" + getBalance(player))

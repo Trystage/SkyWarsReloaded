@@ -543,6 +543,27 @@ public class Util {
         }
     }
 
+    public int getExpRequiredForLevel(int targetLevel) {
+        // 目标等级对应的原始值（去掉+1偏移）
+        double x = targetLevel - 1;
+
+        if (targetLevel <= 17) {
+            // 第一段公式：x² + 6x
+            return (int) (x * x + 6 * x);
+        } else if (targetLevel <= 32) {
+            // 第二段公式：2.5x² - 40.5x + 360
+            return (int) (2.5 * x * x - 40.5 * x + 360);
+        } else {
+            // 第三段公式：4.5x² - 162.5x + 2220
+            return (int) (4.5 * x * x - 162.5 * x + 2220);
+        }
+    }
+
+    public int getExpRequiredForNextLevel(int currentLevel) {
+        // 下一级就是当前等级+1
+        return getExpRequiredForLevel(currentLevel + 1);
+    }
+
     public String getFormattedTime(int x) {
         return secondsToTimeString(x);
        /* String hms;

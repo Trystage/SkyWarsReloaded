@@ -55,6 +55,8 @@ public class SWRPlaceholderAPI extends PlaceholderExpansion {
             return "" + stat.getDeaths();
         } else if (identifier.equalsIgnoreCase("xp")) {
             return "" + stat.getXp();
+        } else if (identifier.equalsIgnoreCase("reqxp")) {
+            return "" + Util.get().getExpRequiredForNextLevel(Util.get().getPlayerLevel(p));
         } else if (identifier.equalsIgnoreCase("games_played") ||
                 identifier.equalsIgnoreCase("games")) {
             return "" + (stat.getWins() + stat.getLosses());
