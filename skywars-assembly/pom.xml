@@ -20,18 +20,18 @@
             <version>${revision}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.walrusone</groupId>
-            <artifactId>slime-asp</artifactId>
-            <version>${revision}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.walrusone</groupId>
-            <artifactId>slime-legacy</artifactId>
-            <version>${revision}</version>
-            <scope>compile</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.walrusone</groupId>-->
+<!--            <artifactId>slime-asp</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.walrusone</groupId>-->
+<!--            <artifactId>slime-legacy</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.walrusone</groupId>
             <artifactId>v1_8_R3</artifactId>

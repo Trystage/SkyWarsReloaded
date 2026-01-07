@@ -1,5 +1,8 @@
 # SkyWarsReloaded
 
+**This is a fork of SkyWarsReloaded! You Should not use this forked plugin!**
+**Yes there were bug fixes and TrystageBedwars Feature but you shouldn't use this fork!**
+
 *Created by [Devmart](https://devmart.net).*
 
 The most popular Skywars plugin ever built for Spigot and Bukkit!
