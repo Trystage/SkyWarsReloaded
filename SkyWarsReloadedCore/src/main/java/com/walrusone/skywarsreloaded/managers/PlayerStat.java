@@ -190,7 +190,7 @@ public class PlayerStat {
             scoreboard =  new SkywarsBoard(player, scores.size());
             scoreboards.put(player, scoreboard);
         }
-        scoreboard.setTitle(ChatColor.translateAlternateColorCodes('&', lines.get(0)));
+        scoreboard.setTitle(ChatColor.translateAlternateColorCodes('&', lines.get(0)), player);
         for (int i=0; i< scores.size();i++) {
             String line = scores.get(i);
             if (!scoreboard.getLine(i).equals(line)) {

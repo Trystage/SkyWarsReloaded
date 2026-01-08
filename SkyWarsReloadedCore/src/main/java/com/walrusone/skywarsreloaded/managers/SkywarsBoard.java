@@ -39,8 +39,12 @@ public class SkywarsBoard {
         this.player.setScoreboard(this.board);
     }
 
-    public void setTitle(String arg0) {
+    public void setTitle(String arg0, Player arg1) {
         if (arg0 == null) arg0 = "";
+
+        if (arg0.contains("%") && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            arg0 = PlaceholderAPI.setPlaceholders(arg1, arg0);
+        }
 
         if (cache.containsKey(-1) && cache.get(-1).equals(arg0)) return;
         cache.remove(-1);
