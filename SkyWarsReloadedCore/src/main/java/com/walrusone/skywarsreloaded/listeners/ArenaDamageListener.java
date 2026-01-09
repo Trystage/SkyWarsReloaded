@@ -8,10 +8,16 @@ import com.walrusone.skywarsreloaded.managers.GameMapManager;
 import com.walrusone.skywarsreloaded.managers.MatchManager;
 import com.walrusone.skywarsreloaded.matchevents.EnderDragonEvent;
 import com.walrusone.skywarsreloaded.matchevents.MatchEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.*;
+import org.bukkit.util.Vector;
+
+import java.util.Collection;
 
 public class ArenaDamageListener implements org.bukkit.event.Listener {
 
@@ -92,6 +98,42 @@ public class ArenaDamageListener implements org.bukkit.event.Listener {
                 if (pd != null) {
                     pd.setTaggedBy(attacker);
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void fireballHit(ProjectileHitEvent e) {
+        if(!(e.getEntity() instanceof Fireball)) return;
+        Location location = e.getEntity().getLocation();
+        Vector vector = location.toVector();
+        World world = location.getWorld();
+        assert world != null;
+        Collection<Entity> nearbyEntities = e.getEntity().getWorld()
+                .getNearbyEntities(location, 3, 3, 3);
+        for(Entity player : nearbyEntities) {
+            if (Bukkit.getOnlinePlayers().contains(player)){
+                Vector playerVector = player.getLocation().toVector();
+                Vector normalizedVector = playerVector.subtract(vector).normalize();
+                Vector horizontalVector = normalizedVector.multiply(1.1);
+                double y = normalizedVector.getY();
+                if (y < 0) y += 1.5;
+                if(location.getY() > player.getLocation().getY() + 1){
+                    if(location.getY() > player.getLocation().getY() + 1.5){
+                        y = 0; // kb for lower than fireballs
+                    }
+                    else{
+                        y = 0.9; // kb for lower than fireballs
+                    }
+                    horizontalVector.multiply(1.2);
+                } else {
+                    if (y <= 0.5) {
+                        y = 0.9 * 1.5; // kb for not jumping
+                    } else {
+                        y = y * 0.9 * 1.5; // kb for jumping
+                    }
+                }
+                player.setVelocity(horizontalVector.setY(y));
             }
         }
     }

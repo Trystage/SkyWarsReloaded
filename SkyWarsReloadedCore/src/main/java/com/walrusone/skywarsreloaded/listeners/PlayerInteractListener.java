@@ -48,12 +48,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 public class PlayerInteractListener implements Listener {
 
+    private static final long FIREBALL_COOLDOWN_MILLIS = 400L;
+    private final Map<UUID, Long> lastFireballUse = new HashMap<>();
 
     Object navigationWand = "";
     Object wandItem = "";
@@ -222,7 +226,7 @@ public class PlayerInteractListener implements Listener {
                 boolean joined;
                 if (!SkyWarsReloaded.getCfg().bungeeMode()) {
                     for (GameMap gMap : SkyWarsReloaded.getGameMapMgr().getMapsCopy()) {
-                        if ((gMap.hasSign(loc) || (!event.getClickedBlock().getType().name().contains("WALL") && gMap.hasSign(loc.clone().add(0, -1, 0)))) && (gMap.getMatchState().equals(MatchState.WAITINGSTART) || gMap.getMatchState().equals(MatchState.WAITINGLOBBY))) {
+                        if ((gMap.hasSign(loc) || (!event.getClickedBlock().getType().name().contains("WALL") && gMap.hasSign(loc.add(0, -1, 0)))) && (gMap.getMatchState().equals(MatchState.WAITINGSTART) || gMap.getMatchState().equals(MatchState.WAITINGLOBBY))) {
                             if (player.hasPermission("sw.signs") && player.isSneaking()) {
                                 return;
                             }
@@ -245,7 +249,6 @@ public class PlayerInteractListener implements Listener {
                         }
                     }
                 } else {
-                    // todo add party join support
                     SWRServer server = SWRServer.getSign(loc);
                     if (server != null) {
                         if ((server.getMatchState() == MatchState.WAITINGSTART || server.getMatchState().equals(MatchState.WAITINGLOBBY)) && server.getPlayerCount() < server.getMaxPlayers()) {
@@ -305,7 +308,6 @@ public class PlayerInteractListener implements Listener {
                         if (SkyWarsReloaded.getIC().has(gameMap.getName() + "teamselect")) {
                             SkyWarsReloaded.getIC().getMenu(gameMap.getName() + "teamselect").update();
                         }
-                        // TODO ADD TEAM SELECTION MENU + ADD SOUND
                         return;
                     } else if (event.getItem().isSimilar(SkyWarsReloaded.getIM().getItem("exitGameItem"))) {
                         if (SkyWarsReloaded.getCfg().debugEnabled())
@@ -314,7 +316,6 @@ public class PlayerInteractListener implements Listener {
                             @Override
                             public void run() {
                                 SkyWarsReloaded.get().getPlayerManager().removePlayer(player, PlayerRemoveReason.PLAYER_QUIT_GAME, null, true);
-                                // MatchManager.get().removeAlivePlayer(player, DamageCause.CUSTOM, true, true);
                             }
                         }.runTaskLater(SkyWarsReloaded.get(), 1);
                     }
@@ -322,6 +323,67 @@ public class PlayerInteractListener implements Listener {
                 return;
             }
             if (gameMap.getMatchState() == MatchState.PLAYING) {
+                if (event.hasItem() && event.getItem() != null) {
+                    ItemStack item = event.getItem();
+                    String typeName = item.getType().name();
+                    boolean isFireballItem = typeName.equalsIgnoreCase("FIRE_CHARGE") || typeName.equalsIgnoreCase("FIREBALL");
+
+                    if (isFireballItem && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+                        // 首先取消事件，防止原版的火焰弹放火行为
+                        event.setCancelled(true);
+
+                        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null && event.getClickedBlock().getType() == Material.ENDER_CHEST) {
+                            // 点击末影箱时不处理烈焰弹，让末影箱正常打开
+                            // 但仍然需要取消事件以防止放火
+                            return;
+                        } else {
+                            UUID uuid = player.getUniqueId();
+                            long now = System.currentTimeMillis();
+                            Long last = lastFireballUse.get(uuid);
+                            if (last != null) {
+                                long elapsed = now - last;
+                                if (elapsed < FIREBALL_COOLDOWN_MILLIS) {
+                                    double remainingSeconds = (FIREBALL_COOLDOWN_MILLIS - elapsed) / 1000.0;
+                                    if (remainingSeconds < 0.1) {
+                                        remainingSeconds = 0.1;
+                                    }
+                                    player.sendMessage(ChatColor.RED + "火焰弹冷却中，还需 " + String.format("%.1f", remainingSeconds) + " 秒才能再次使用");
+                                    return;
+                                } else {
+                                    lastFireballUse.remove(uuid);
+                                }
+                            }
+
+                            org.bukkit.util.Vector direction = player.getLocation().getDirection().normalize();
+                            org.bukkit.Location spawnLoc = player.getEyeLocation().add(direction.clone().multiply(0.5));
+
+                            org.bukkit.entity.LargeFireball fireball = player.getWorld().spawn(spawnLoc, org.bukkit.entity.LargeFireball.class);
+                            fireball.setShooter(player);
+                            fireball.setIsIncendiary(false);
+                            // 爆炸威力设置为1.5，根据配置
+                            fireball.setYield(1.5F);
+                            // 火球飞行速度设置为2.0
+                            fireball.setVelocity(direction.multiply(2.0));
+
+                            if (SkyWarsReloaded.getCfg().soundsEnabled()) {
+                                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0F, 1.2F);
+                            }
+
+                            if (player.getGameMode() != GameMode.CREATIVE) {
+                                int amount = item.getAmount();
+                                if (amount <= 1) {
+                                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                                } else {
+                                    item.setAmount(amount - 1);
+                                }
+                            }
+
+                            lastFireballUse.put(uuid, now);
+                            return;
+                        }
+                    }
+                }
+
                 if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     Block block = event.getClickedBlock();
                     if (block.getType().equals(Material.ENDER_CHEST)) {
@@ -435,7 +497,6 @@ public class PlayerInteractListener implements Listener {
                     if (e.getBlock().getType().equals(Material.CHEST) || e.getBlock().getType().equals(Material.TRAPPED_CHEST)) {
                         Chest chest = (Chest) e.getBlock().getState();
 
-                        // Remove from map
                         map.removeChest(chest);
                         InventoryHolder ih = chest.getInventory().getHolder();
                         if (ih instanceof DoubleChest) {
@@ -455,10 +516,8 @@ public class PlayerInteractListener implements Listener {
                         }
                         player.sendMessage(new Messaging.MessageFormatter().setVariable("mapname", map.getDisplayName()).format("maps.removeChest"));
                     } else if (e.getBlock().getType().equals(Material.DIAMOND_BLOCK)) {
-                        // Remove all spawns matching location and collect which ones were removed
                         Map<TeamCard, List<Integer>> result = map.removeSpawnsAtLocation(blockLoc);
 
-                        // Send a message to the player for every spawn removed - this could be one or multiple
                         for (Map.Entry<TeamCard, List<Integer>> removedTeamLocs : result.entrySet()) {
                             int teamCardPos = map.getTeamCardPosition(removedTeamLocs.getKey());
                             if (teamCardPos == -1) {
@@ -466,9 +525,7 @@ public class PlayerInteractListener implements Listener {
                             }
                             for (Integer spawnIndex : removedTeamLocs.getValue()) {
                                 player.sendMessage(new Messaging.MessageFormatter()
-                                        // Convert spawn index to human number
                                         .setVariable("num", "" + (spawnIndex + 1))
-                                        // Convert team index to human number
                                         .setVariable("team", "" + (teamCardPos + 1))
                                         .setVariable("mapname", map.getDisplayName())
                                         .format("maps.spawnRemoved"));
