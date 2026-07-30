@@ -36,6 +36,8 @@ public class PlayerDeathListener implements org.bukkit.event.Listener {
         GameMap gameMap = MatchManager.get().getPlayerMap(player);
         if (gameMap == null) return;
 
+        PlayerInteractListener.lastFireballUse.remove(player.getUniqueId());
+
         // Handle fall damage
         if (!gameMap.getAllowFallDamage() && e.getCause() == EntityDamageEvent.DamageCause.FALL) {
             e.setCancelled(true);

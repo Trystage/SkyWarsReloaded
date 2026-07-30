@@ -19,6 +19,7 @@ public class PlayerQuitListener implements org.bukkit.event.Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         final Player player = event.getPlayer();
         final UUID uuid = player.getUniqueId();
+        PlayerInteractListener.lastFireballUse.remove(uuid);
         Party party = Party.getParty(player);
         if (party != null) {
             party.removeMember(player);

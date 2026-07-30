@@ -57,7 +57,7 @@ import java.util.UUID;
 public class PlayerInteractListener implements Listener {
 
     private static final long FIREBALL_COOLDOWN_MILLIS = 400L;
-    private final Map<UUID, Long> lastFireballUse = new HashMap<>();
+    public static Map<UUID, Long> lastFireballUse = new HashMap<>();
 
     Object navigationWand = "";
     Object wandItem = "";
