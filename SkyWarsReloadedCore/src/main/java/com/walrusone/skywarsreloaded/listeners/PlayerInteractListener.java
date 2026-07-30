@@ -372,7 +372,7 @@ public class PlayerInteractListener implements Listener {
                             if (player.getGameMode() != GameMode.CREATIVE) {
                                 int amount = item.getAmount();
                                 if (amount <= 1) {
-                                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                                    item.setType(Material.AIR);
                                 } else {
                                     item.setAmount(amount - 1);
                                 }
